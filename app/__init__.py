@@ -2,6 +2,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from config import Config
+from sqlalchemy import text
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -23,11 +24,12 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        # Add supplier_id column if it does not exist
         try:
-            db.engine.execute('ALTER TABLE products ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id)')
-        except:
-            pass
+            with db.engine.connect() as conn:
+                conn.execute(text('ALTER TABLE products ADD COLUMN IF NOT EXISTS supplier_id INTEGER REFERENCES suppliers(id)'))
+                conn.commit()
+        except Exception as e:
+            print(f"Migration note: {e}")
 
     from app.routes.inventory import inventory_bp
     from app.routes.orders import orders_bp
