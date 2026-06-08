@@ -1,0 +1,34 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Orders Management</h2>
+</div>
+<table class="table table-hover table-bordered">
+  <thead class="table-success">
+    <tr><th>ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for o in orders %}
+    <tr id="order-{{ o.id }}">
+      <td>{{ o.id }}</td>
+      <td>{{ o.customer_name }}</td>
+      <td>Rs.{{ o.total_amount }}</td>
+      <td>
+        <span class="badge
+          {% if o.status == 'delivered' %}bg-success
+          {% elif o.status == 'cancelled' %}bg-danger
+          {% elif o.status == 'confirmed' %}bg-primary
+          {% else %}bg-warning text-dark{% endif %}">
+          {{ o.status }}
+        </span>
+      </td>
+      <td>{{ o.order_date.strftime('%d-%m-%Y') }}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-success" onclick="updateStatus({{ o.id }}, 'confirmed')">Confirm</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="updateStatus({{ o.id }}, 'cancelled')">Cancel</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

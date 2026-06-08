@@ -1,0 +1,48 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Inventory Management</h2>
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Add Product</button>
+</div>
+<table class="table table-hover table-bordered">
+  <thead class="table-success">
+    <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+    <tr id="row-{{ p.id }}">
+      <td>{{ p.id }}</td>
+      <td>{{ p.name }}</td>
+      <td>{{ p.category }}</td>
+      <td>Rs.{{ p.price }}</td>
+      <td>
+        <span class="badge {% if p.stock_quantity < 10 %}bg-danger{% else %}bg-success{% endif %}">
+          {{ p.stock_quantity }}
+        </span>
+      </td>
+      <td>
+        <button class="btn btn-sm btn-outline-primary" onclick="editProduct({{ p.id }}, '{{ p.name }}', {{ p.price }}, {{ p.stock_quantity }})">Edit</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct({{ p.id }})">Delete</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<div class="modal fade" id="addProductModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title">Add New Product</h5></div>
+      <div class="modal-body">
+        <input class="form-control mb-2" id="prodName" placeholder="Product name">
+        <input class="form-control mb-2" id="prodCategory" placeholder="Category">
+        <input class="form-control mb-2" id="prodPrice" type="number" placeholder="Price">
+        <input class="form-control" id="prodStock" type="number" placeholder="Stock quantity">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="addProduct()">Add Product</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
