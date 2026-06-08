@@ -9,7 +9,8 @@ inventory_bp = Blueprint('inventory', __name__, url_prefix='/inventory')
 @login_required
 def index():
     products = Product.query.all()
-    return render_template('inventory.html', products=products)
+    categories = list(set([p.category for p in products if p.category]))
+    return render_template('inventory.html', products=products, categories=categories)
 
 @inventory_bp.route('/api/products', methods=['GET'])
 @login_required

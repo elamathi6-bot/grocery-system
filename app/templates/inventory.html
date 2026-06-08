@@ -4,16 +4,77 @@
   <h2>Inventory Management</h2>
   <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Add Product</button>
 </div>
-<table class="table table-hover table-bordered">
+
+<!-- Search & Filter Bar -->
+<div class="row mb-3">
+  <div class="col-md-4">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search products...">
+  </div>
+  <div class="col-md-3">
+    <select id="categoryFilter" class="form-select">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}">{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-3">
+    <select id="stockFilter" class="form-select">
+      <option value="">All Stock</option>
+      <option value="low">Low Stock (less than 10)</option>
+      <option value="ok">In Stock</option>
+    </select>
+  </div>
+  <div class="col-md-2">
+    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">Reset</button>
+  </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-3">
+  <div class="col-md-3">
+    <div class="card bg-success text-white text-center p-2">
+      <small>Total Products</small>
+      <strong>{{ products|length }}</strong>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-danger text-white text-center p-2">
+      <small>Low Stock</small>
+      <strong>{{ products|selectattr('stock_quantity', 'lt', 10)|list|length }}</strong>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-primary text-white text-center p-2">
+      <small>Categories</small>
+      <strong>{{ categories|length }}</strong>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-warning text-dark text-center p-2">
+      <small>Total Value</small>
+      <strong>Rs.{{ "%.0f"|format(products|sum(attribute='price')) }}</strong>
+    </div>
+  </div>
+</div>
+
+<table class="table table-hover table-bordered" id="productTable">
   <thead class="table-success">
-    <tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+    <tr>
+      <th onclick="sortTable(0)" style="cursor:pointer">ID ↕</th>
+      <th onclick="sortTable(1)" style="cursor:pointer">Name ↕</th>
+      <th onclick="sortTable(2)" style="cursor:pointer">Category ↕</th>
+      <th onclick="sortTable(3)" style="cursor:pointer">Price ↕</th>
+      <th onclick="sortTable(4)" style="cursor:pointer">Stock ↕</th>
+      <th>Actions</th>
+    </tr>
   </thead>
-  <tbody>
+  <tbody id="productBody">
     {% for p in products %}
-    <tr id="row-{{ p.id }}">
+    <tr id="row-{{ p.id }}" data-category="{{ p.category }}" data-stock="{{ p.stock_quantity }}">
       <td>{{ p.id }}</td>
       <td>{{ p.name }}</td>
-      <td>{{ p.category }}</td>
+      <td><span class="badge bg-secondary">{{ p.category }}</span></td>
       <td>Rs.{{ p.price }}</td>
       <td>
         <span class="badge {% if p.stock_quantity < 10 %}bg-danger{% else %}bg-success{% endif %}">
@@ -28,13 +89,15 @@
     {% endfor %}
   </tbody>
 </table>
+
+<!-- Add Product Modal -->
 <div class="modal fade" id="addProductModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Add New Product</h5></div>
+      <div class="modal-header bg-success text-white"><h5 class="modal-title">Add New Product</h5></div>
       <div class="modal-body">
         <input class="form-control mb-2" id="prodName" placeholder="Product name">
-        <input class="form-control mb-2" id="prodCategory" placeholder="Category">
+        <input class="form-control mb-2" id="prodCategory" placeholder="Category (e.g. Grains, Fruits)">
         <input class="form-control mb-2" id="prodPrice" type="number" placeholder="Price">
         <input class="form-control" id="prodStock" type="number" placeholder="Stock quantity">
       </div>
@@ -45,4 +108,48 @@
     </div>
   </div>
 </div>
+
+<script>
+// Search
+document.getElementById('searchInput').addEventListener('keyup', filterTable);
+document.getElementById('categoryFilter').addEventListener('change', filterTable);
+document.getElementById('stockFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const category = document.getElementById('categoryFilter').value.toLowerCase();
+  const stock = document.getElementById('stockFilter').value;
+  const rows = document.querySelectorAll('#productBody tr');
+  rows.forEach(row => {
+    const name = row.cells[1].textContent.toLowerCase();
+    const cat = row.dataset.category ? row.dataset.category.toLowerCase() : '';
+    const stockVal = parseInt(row.dataset.stock);
+    const matchSearch = name.includes(search);
+    const matchCat = !category || cat === category;
+    const matchStock = !stock || (stock === 'low' && stockVal < 10) || (stock === 'ok' && stockVal >= 10);
+    row.style.display = matchSearch && matchCat && matchStock ? '' : 'none';
+  });
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('categoryFilter').value = '';
+  document.getElementById('stockFilter').value = '';
+  filterTable();
+}
+
+// Sort
+let sortDir = {};
+function sortTable(col) {
+  const tbody = document.getElementById('productBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  sortDir[col] = !sortDir[col];
+  rows.sort((a, b) => {
+    const x = a.cells[col].textContent.trim();
+    const y = b.cells[col].textContent.trim();
+    return sortDir[col] ? x.localeCompare(y, undefined, {numeric: true}) : y.localeCompare(x, undefined, {numeric: true});
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+</script>
 {% endblock %}
