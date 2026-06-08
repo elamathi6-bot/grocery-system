@@ -23,6 +23,11 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        # Add supplier_id column if it does not exist
+        try:
+            db.engine.execute('ALTER TABLE products ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id)')
+        except:
+            pass
 
     from app.routes.inventory import inventory_bp
     from app.routes.orders import orders_bp
