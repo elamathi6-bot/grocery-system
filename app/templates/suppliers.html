@@ -1,0 +1,113 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Supplier Management</h2>
+  <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSupplierModal">+ Add Supplier</button>
+</div>
+
+<!-- Stats -->
+<div class="row mb-3">
+  <div class="col-md-4">
+    <div class="card bg-success text-white text-center p-2">
+      <small>Total Suppliers</small>
+      <strong>{{ suppliers|length }}</strong>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card bg-primary text-white text-center p-2">
+      <small>Total Products Supplied</small>
+      <strong>{{ suppliers|sum(attribute='products')|list|length }}</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Search -->
+<div class="mb-3">
+  <input type="text" id="supplierSearch" class="form-control w-50" placeholder="Search suppliers...">
+</div>
+
+<div class="row" id="supplierCards">
+  {% for s in suppliers %}
+  <div class="col-md-4 mb-3 supplier-card">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-success text-white d-flex justify-content-between">
+        <strong>{{ s.name }}</strong>
+        <button class="btn btn-sm btn-outline-light" onclick="deleteSupplier({{ s.id }})">Delete</button>
+      </div>
+      <div class="card-body">
+        <p class="mb-1"><strong>Contact:</strong> {{ s.contact or 'N/A' }}</p>
+        <p class="mb-1"><strong>Email:</strong> {{ s.email or 'N/A' }}</p>
+        <p class="mb-1"><strong>Phone:</strong> {{ s.phone or 'N/A' }}</p>
+        <p class="mb-1"><strong>Address:</strong> {{ s.address or 'N/A' }}</p>
+        <p class="mb-1"><strong>Products:</strong>
+          {% if s.products %}
+            {% for p in s.products %}
+              <span class="badge bg-secondary">{{ p.name }}</span>
+            {% endfor %}
+          {% else %}
+            <span class="text-muted">No products linked</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="alert alert-info">No suppliers yet. Add your first supplier!</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white"><h5 class="modal-title">Add New Supplier</h5></div>
+      <div class="modal-body">
+        <input class="form-control mb-2" id="supName" placeholder="Supplier name *">
+        <input class="form-control mb-2" id="supContact" placeholder="Contact person">
+        <input class="form-control mb-2" id="supEmail" placeholder="Email">
+        <input class="form-control mb-2" id="supPhone" placeholder="Phone number">
+        <input class="form-control" id="supAddress" placeholder="Address">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="addSupplier()">Add Supplier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('supplierSearch').addEventListener('keyup', function() {
+  const val = this.value.toLowerCase();
+  document.querySelectorAll('.supplier-card').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(val) ? '' : 'none';
+  });
+});
+
+async function addSupplier() {
+  const data = {
+    name: document.getElementById('supName').value,
+    contact: document.getElementById('supContact').value,
+    email: document.getElementById('supEmail').value,
+    phone: document.getElementById('supPhone').value,
+    address: document.getElementById('supAddress').value
+  };
+  if (!data.name) { alert('Supplier name is required'); return; }
+  const res = await fetch('/suppliers/api/suppliers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (res.ok) { location.reload(); }
+  else { alert('Error adding supplier'); }
+}
+
+async function deleteSupplier(id) {
+  if (!confirm('Delete this supplier?')) return;
+  const res = await fetch('/suppliers/api/suppliers/' + id, { method: 'DELETE' });
+  if (res.ok) { location.reload(); }
+}
+</script>
+{% endblock %}

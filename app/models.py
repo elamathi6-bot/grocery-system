@@ -15,6 +15,27 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Supplier(db.Model):
+    __tablename__ = 'suppliers'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    contact = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    address = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    products = db.relationship('Product', backref='supplier', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'contact': self.contact,
+            'email': self.email,
+            'phone': self.phone,
+            'address': self.address
+        }
+
 class Product(db.Model):
     __tablename__ = 'products'
     id = db.Column(db.Integer, primary_key=True)
@@ -22,6 +43,7 @@ class Product(db.Model):
     category = db.Column(db.String(50))
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock_quantity = db.Column(db.Integer, default=0)
+    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -30,7 +52,8 @@ class Product(db.Model):
             'name': self.name,
             'category': self.category,
             'price': float(self.price),
-            'stock_quantity': self.stock_quantity
+            'stock_quantity': self.stock_quantity,
+            'supplier': self.supplier.name if self.supplier else 'N/A'
         }
 
 class Order(db.Model):

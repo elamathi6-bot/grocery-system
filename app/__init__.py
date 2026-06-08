@@ -15,7 +15,7 @@ def create_app():
     login_manager.login_view = "auth.login"
     login_manager.login_message = "Please login to access this page"
 
-    from app.models import User, Product, Order, OrderItem
+    from app.models import User, Product, Order, OrderItem, Supplier
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -28,9 +28,11 @@ def create_app():
     from app.routes.orders import orders_bp
     from app.routes.auth import auth_bp
     from app.routes.dashboard import dashboard_bp
+    from app.routes.suppliers import suppliers_bp
     app.register_blueprint(inventory_bp)
     app.register_blueprint(orders_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(suppliers_bp)
 
     return app
