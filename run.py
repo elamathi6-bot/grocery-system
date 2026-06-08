@@ -6,7 +6,6 @@ app = application
 
 with application.app_context():
     db.create_all()
-    print("Tables created successfully!")
 
 if __name__ == "__main__":
     application.run(debug=True)

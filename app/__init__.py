@@ -15,11 +15,14 @@ def create_app():
     login_manager.login_view = "auth.login"
     login_manager.login_message = "Please login to access this page"
 
-    from app.models import User
+    from app.models import User, Product, Order, OrderItem
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    with app.app_context():
+        db.create_all()
 
     from app.routes.inventory import inventory_bp
     from app.routes.orders import orders_bp
