@@ -5,7 +5,6 @@
   <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSupplierModal">+ Add Supplier</button>
 </div>
 
-<!-- Stats -->
 <div class="row mb-3">
   <div class="col-md-4">
     <div class="card bg-success text-white text-center p-2">
@@ -13,15 +12,8 @@
       <strong>{{ suppliers|length }}</strong>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card bg-primary text-white text-center p-2">
-      <small>Total Products Supplied</small>
-      <strong>{{ suppliers|sum(attribute='products')|list|length }}</strong>
-    </div>
-  </div>
 </div>
 
-<!-- Search -->
 <div class="mb-3">
   <input type="text" id="supplierSearch" class="form-control w-50" placeholder="Search suppliers...">
 </div>
@@ -39,15 +31,6 @@
         <p class="mb-1"><strong>Email:</strong> {{ s.email or 'N/A' }}</p>
         <p class="mb-1"><strong>Phone:</strong> {{ s.phone or 'N/A' }}</p>
         <p class="mb-1"><strong>Address:</strong> {{ s.address or 'N/A' }}</p>
-        <p class="mb-1"><strong>Products:</strong>
-          {% if s.products %}
-            {% for p in s.products %}
-              <span class="badge bg-secondary">{{ p.name }}</span>
-            {% endfor %}
-          {% else %}
-            <span class="text-muted">No products linked</span>
-          {% endif %}
-        </p>
       </div>
     </div>
   </div>
@@ -58,7 +41,6 @@
   {% endfor %}
 </div>
 
-<!-- Add Supplier Modal -->
 <div class="modal fade" id="addSupplierModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">

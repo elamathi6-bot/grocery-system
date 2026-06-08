@@ -24,7 +24,6 @@ class Supplier(db.Model):
     phone = db.Column(db.String(20))
     address = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    products = db.relationship('Product', backref='supplier', lazy=True)
 
     def to_dict(self):
         return {
@@ -43,7 +42,6 @@ class Product(db.Model):
     category = db.Column(db.String(50))
     price = db.Column(db.Numeric(10, 2), nullable=False)
     stock_quantity = db.Column(db.Integer, default=0)
-    supplier_id = db.Column(db.Integer, db.ForeignKey('suppliers.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -52,8 +50,7 @@ class Product(db.Model):
             'name': self.name,
             'category': self.category,
             'price': float(self.price),
-            'stock_quantity': self.stock_quantity,
-            'supplier': self.supplier.name if self.supplier else 'N/A'
+            'stock_quantity': self.stock_quantity
         }
 
 class Order(db.Model):

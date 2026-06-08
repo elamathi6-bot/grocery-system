@@ -1,7 +1,7 @@
 ﻿from flask import Blueprint, request, jsonify, render_template
 from flask_login import login_required
 from app import db
-from app.models import Supplier, Product
+from app.models import Supplier
 
 suppliers_bp = Blueprint('suppliers', __name__, url_prefix='/suppliers')
 
@@ -33,9 +33,3 @@ def delete_supplier(id):
     db.session.delete(supplier)
     db.session.commit()
     return jsonify({'message': 'Supplier deleted'})
-
-@suppliers_bp.route('/api/suppliers/<int:id>/products', methods=['GET'])
-@login_required
-def get_supplier_products(id):
-    supplier = Supplier.query.get_or_404(id)
-    return jsonify([p.to_dict() for p in supplier.products])
