@@ -1,7 +1,9 @@
-﻿from flask import Blueprint, request, jsonify, render_template
+﻿from flask import Blueprint, request, jsonify, render_template, Response
 from flask_login import login_required
 from app import db
-from app.models import Product
+from app.models import Product, Order, OrderItem
+import csv
+import io
 
 inventory_bp = Blueprint('inventory', __name__, url_prefix='/inventory')
 
@@ -50,3 +52,29 @@ def delete_product(id):
     db.session.delete(product)
     db.session.commit()
     return jsonify({'message': 'Product deleted'})
+
+@inventory_bp.route('/export/products')
+@login_required
+def export_products():
+    products = Product.query.all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Name', 'Category', 'Price', 'Stock', 'Created At'])
+    for p in products:
+        writer.writerow([p.id, p.name, p.category, p.price, p.stock_quantity, p.created_at])
+    output.seek(0)
+    return Response(output, mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment;filename=inventory.csv'})
+
+@inventory_bp.route('/export/orders')
+@login_required
+def export_orders():
+    orders = Order.query.all()
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['Order ID', 'Customer', 'Total', 'Status', 'Date'])
+    for o in orders:
+        writer.writerow([o.id, o.customer_name, o.total_amount, o.status, o.order_date])
+    output.seek(0)
+    return Response(output, mimetype='text/csv',
+        headers={'Content-Disposition': 'attachment;filename=orders.csv'})
